@@ -109,4 +109,83 @@ async function displayAlbums() {
 async function main() {
     // Get the list of all songs
     await getSongs("video84/songs/ncs");
-   
+    playMusic(songs[0], true);
+
+    // Display all the albums on the page
+    await displayAlbums();
+
+    // Attach event listeners to play, next, and previous buttons
+    play.addEventListener("click", () => {
+        if (currentsong.paused) {
+            currentsong.play();
+            play.src = "pause.svg";
+        } else {
+            currentsong.pause();
+            play.src = "play.svg";
+        }
+    });
+
+    // Listen for time update event
+    currentsong.addEventListener("timeupdate", () => {
+        document.querySelector(".songtime").innerHTML = `${secondsToMinutesSeconds(currentsong.currentTime)} / ${secondsToMinutesSeconds(currentsong.duration)}`;
+        document.querySelector(".circle").style.left = (currentsong.currentTime / currentsong.duration) * 100 + "%";
+    });
+
+    // Add an event listener to seekbar
+    document.querySelector(".seekbar").addEventListener("click", (e) => {
+        let percent = (e.offsetX / e.target.getBoundingClientRect().width) * 100;
+        document.querySelector(".circle").style.left = percent + "%";
+        currentsong.currentTime = ((currentsong.duration) * percent) / 100;
+    });
+
+    // Add event listener for hamburger
+    document.querySelector(".hamburger").addEventListener("click", () => {
+        document.querySelector(".left").style.left = "0";
+    });
+
+    // Add event listener for close button
+    document.querySelector(".close").addEventListener("click", () => {
+        document.querySelector(".left").style.left = "-120%";
+    });
+
+    // Add event listener for previous button
+    previous.addEventListener("click", () => {
+        currentsong.pause();
+        let index = songs.indexOf(currentsong.src.split("/").slice(-1)[0]);
+        if ((index - 1) >= 0) {
+            playMusic(songs[index - 1]);
+        }
+    });
+
+    // Add event listener for next button
+    next.addEventListener("click", () => {
+        currentsong.pause();
+        let index = songs.indexOf(currentsong.src.split("/").slice(-1)[0]);
+        if ((index + 1) < songs.length) {
+            playMusic(songs[index + 1]);
+        }
+    });
+
+    // Add event listener to volume
+    document.querySelector(".range input").addEventListener("change", (e) => {
+        currentsong.volume = parseInt(e.target.value) / 100;
+        if (currentsong.volume > 0) {
+            document.querySelector(".volume>img").src = document.querySelector(".volume>img").src.replace("mute.svg", "volume.svg");
+        }
+    });
+
+    // Add event listener to mute the track
+    document.querySelector(".volume>img").addEventListener("click", (e) => {
+        if (e.target.src.includes("volume.svg")) {
+            e.target.src = e.target.src.replace("volume.svg", "mute.svg");
+            currentsong.volume = 0;
+            document.querySelector(".range input").value = 0;
+        } else {
+            e.target.src = e.target.src.replace("mute.svg", "volume.svg");
+            currentsong.volume = 0.1;
+            document.querySelector(".range input").value = 10;
+        }
+    });
+}
+
+main();
